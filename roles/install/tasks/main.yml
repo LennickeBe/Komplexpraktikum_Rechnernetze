@@ -1,0 +1,26 @@
+- name: Copy git repo
+  copy:
+    src: ../../../script/
+    dest: measurement_script/
+
+- name: Install pip
+  apt:
+    name: python3-pip
+
+- name: Install python3 venv
+  become: true
+  become_method: sudo
+  apt:
+    name: python3-venv
+
+- name: Create venv
+  shell:
+    chdir: ~/measurement_script
+    cmd: python3 -m venv .venv
+    creates: "~/measurement_script/.venv"
+
+# Note: In ansible shell, "source" is just "."
+- name: Install program to venv
+  shell:
+    chdir: ~/measurement_script
+    cmd: . .venv/bin/activate && pip install .

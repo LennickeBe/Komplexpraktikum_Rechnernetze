@@ -1,0 +1,20 @@
+- name: Copy and install
+  hosts: measure_nodes
+  remote_user: root
+  roles:
+    - install
+
+- name: ping measurement
+  hosts: ping_group
+  roles:
+    - ping
+
+- name: ram measurement
+  hosts: ram_group
+  roles:
+    - ram
+
+- name: iperf measurement
+  hosts: iperf_group
+  roles:
+    - iperf

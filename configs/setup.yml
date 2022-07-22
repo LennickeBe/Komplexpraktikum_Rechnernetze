@@ -1,0 +1,19 @@
+gateway: 'http://PLACEHOLDER_GATEWAY_IP:9091'
+prometheus: 'http://PLACEHOLDER_PROMETHEUS_IP:9090'
+grafana: 'http://PLACEHOLDER_GRAFANA_IP:3000'
+job: 'gateway'
+
+modules:
+        Ping:
+                target: 8.8.8.8
+                count : 5
+        RAM:
+        Iperf:
+                # insert the ip for the endpoint of the measurement here
+                target: 
+                time : 5
+                interval: 1
+                port : 5001
+                # insert the ip of the router from the inventory.yml here
+                via: 
+                loss: 5

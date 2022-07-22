@@ -1,0 +1,19 @@
+- name: get variables from config
+  set_fact:
+          _modules: "{{ (lookup('template', './configs/setup.yml')|from_yaml).modules }}"
+          _gateway_url: "{{ (lookup('template', './configs/setup.yml')|from_yaml).gateway }}"
+
+- name: get the args for this module
+  set_fact:
+          _args: "{{ item.value }}"
+  loop: "{{ lookup('dict', _modules) }}"
+  when: "'RAM' in item.key"
+
+- name: run RAM measurement
+  shell:
+    chdir: ~/measurement_script
+    cmd: . .venv/bin/activate &&  mess_programm {{ _gateway_url }} {{hostvars[inventory_hostname]['ansible_env'].SSH_CONNECTION.split(' ')[2] }} RAM
+  register: mess_programm
+
+- name: print measurement output
+  debug: var=mess_programm.stdout_lines

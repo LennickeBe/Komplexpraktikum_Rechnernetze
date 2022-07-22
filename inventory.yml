@@ -1,0 +1,33 @@
+all:
+  hosts:
+  children:
+    measure_nodes:
+      hosts:
+        # add the address to reach a node here
+        <ip here>:
+          # add the user name for the ssh login for ansible here
+          ansible_user: <user name here>
+        # muliple entries are possible with the same structure:
+        # ip here:
+        #       ansible_user:
+        # and so on
+
+    ping_group:
+      hosts:
+        <ip here>:
+          ansible_user: <user name here>
+
+    ram_group:
+      hosts:
+        <ip here>:
+          ansible_user: <user name here>
+
+    iperf_group:
+      hosts:
+        <ip here>:
+          ansible_user: <user name here>
+
+    router:
+      hosts:
+        <ip here>:
+          ansible_user: <user name here>

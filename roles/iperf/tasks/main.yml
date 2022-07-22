@@ -1,0 +1,54 @@
+- name: get variables from config
+  set_fact:
+          _modules: "{{ (lookup('template', './configs/setup.yml')|from_yaml).modules }}"
+          _gateway_url: "{{ (lookup('template', './configs/setup.yml')|from_yaml).gateway }}"
+
+- name: get the args for this module
+  set_fact:
+          _args: "{{ item.value }}"
+  loop: "{{ lookup('dict', _modules) }}"
+  when: "'Iperf' in item.key"
+
+- name: get the port and target ip
+  set_fact:
+          _port: "{{ _args['port'] }}"
+          _target: "{{ _args['target'] }}"
+          _via: "{{ _args['via'] }}"
+          _loss: "{{ _args['loss'] }}"
+
+- name: start the server on the router
+  shell: |
+        iperf -s -D {{ _port }} >> ~/tmp/iperf.out &
+  run_once: true
+  delegate_to: "{{ _target }}"
+
+
+- name: set up packet loss at router
+  shell: |
+        tc qdisc add dev eth1 root netem loss {{ _loss }}% 
+  run_once: true
+  delegate_to: "{{ _via }}"
+  ignore_unreachable: yes
+
+- name: run iperf measurement
+  shell:
+    chdir: ~/measurement_script
+    cmd: . .venv/bin/activate && mess_programm {{ _gateway_url }} {{ hostvars[inventory_hostname]['ansible_env'].SSH_CONNECTION.split(' ')[2] }} Iperf "{{ _args }}"
+  register: mess_programm
+
+- name: remove packet loss at router
+  shell: |
+        tc qdisc del dev eth1 root netem loss {{ _loss }}%
+  run_once: true
+  delegate_to: "{{ _via }}"
+  ignore_unreachable: yes
+
+
+- name: stop server on router
+  shell: |
+        kill $(ps -A | grep iperf | awk '{print $1}')
+  run_once: true
+  delegate_to: "{{ _target }}"
+
+- name: print measurement output
+  debug: var=mess_programm.stdout_lines
